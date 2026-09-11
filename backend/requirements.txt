@@ -1,0 +1,10 @@
+fastapi>=0.115,<1
+uvicorn[standard]>=0.34,<1
+httpx>=0.28,<1
+python-dotenv>=1.0,<2
+python-multipart>=0.0.20,<1
+pydantic>=2.10,<3
+google-genai>=1.0,<2
+anthropic>=0.49,<1
+pillow>=11,<12
+x402-avm[fastapi,avm]==2.0.2
