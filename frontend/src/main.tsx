@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { WalletProvider, useWallet } from '@txnlab/use-wallet-react'
-import { WalletManager, NetworkId, PROVIDER_ID } from '@txnlab/use-wallet'
+import { WalletManager, NetworkId, WalletId } from '@txnlab/use-wallet'
 import { x402Client } from '@x402-avm/core/client' 
 import { registerExactAvmScheme } from '@x402-avm/avm/exact/client' 
 import type { ClientAvmSigner } from '@x402-avm/avm'
@@ -10,7 +10,7 @@ import './styles.css'
 const API = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '')
 const TESTNET = 'algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI='
 const walletManager = new WalletManager({
-  wallets: [PROVIDER_ID.PERA, PROVIDER_ID.DEFLY],
+  wallets: [WalletId.PERA, WalletId.DEFLY],
   defaultNetwork: NetworkId.TESTNET,
 })
 
