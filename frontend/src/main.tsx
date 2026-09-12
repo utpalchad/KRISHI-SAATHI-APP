@@ -1,12 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import {
-  WalletProvider,
-  WalletManager,
-  NetworkId,
-  useWallet,
-  WalletId,
-} from '@txnlab/use-wallet-react'
+import { WalletProvider, useWallet } from '@txnlab/use-wallet-react'
+import { WalletManager, NetworkId, WalletId } from '@txnlab/use-wallet'
 import { x402Client } from '@x402/core/client'
 import { registerExactAvmScheme } from '@x402/avm/exact/client'
 import type { ClientAvmSigner } from '@x402/avm'
