@@ -11,8 +11,8 @@
   "dependencies": {
     "@txnlab/use-wallet": "5.0.0",
     "@txnlab/use-wallet-react": "5.0.0",
-    "@x402/avm": "2.25.0",
-    "@x402/core": "2.25.0",
+    "@x402-avm/avm": "^2.6.1",
+    "@x402-avm/core": "^2.6.1",
     "@perawallet/connect": "1.6.0",
     "@blockshake/defly-connect": "1.2.1",
     "react": "19.1.1",

@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { WalletProvider, useWallet } from '@txnlab/use-wallet-react'
 import { WalletManager, NetworkId, WalletId } from '@txnlab/use-wallet'
-import { x402Client } from '@x402/core/client'
-import { registerExactAvmScheme } from '@x402/avm/exact/client'
-import type { ClientAvmSigner } from '@x402/avm'
+import { x402Client } from '@x402-avm/core/client' 
+import { registerExactAvmScheme } from '@x402-avm/avm/exact/client' 
+import type { ClientAvmSigner } from '@x402-avm/avm'
 import './styles.css'
 
 const API = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '')
