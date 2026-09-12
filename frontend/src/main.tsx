@@ -10,7 +10,7 @@ import './styles.css'
 const API = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '')
 const TESTNET = 'algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI='
 const walletManager = new WalletManager({
-  wallets: [PROVIDER_ID.PERA, PROVIDER.ID.DEFLY],
+  wallets: [PROVIDER_ID.PERA, PROVIDER_ID.DEFLY],
   defaultNetwork: NetworkId.TESTNET,
 })
 
