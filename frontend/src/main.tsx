@@ -132,15 +132,26 @@ function App() {
   useEffect(() => { localStorage.setItem('krishi-profile', JSON.stringify(profile)) }, [profile])
   useEffect(() => { loadHome() }, [])
   const loadHome = async () => {
-    try {
-      const [b, r, w, m] = await Promise.all([
-        api<any>('/api/farm-brief', { method:'POST', body:JSON.stringify({ profile }) }),
-        api<any>('/api/recommendations', { method:'POST', body:JSON.stringify({ profile }) }),
-        api<any>('/api/weather', { method:'POST', body:JSON.stringify({ city:profile.district, country:'IN' }) }),
-        api<any>('/api/market', { method:'POST', body:JSON.stringify({ commodity:profile.current_crop, state:profile.state, district:profile.district }) })
-      ])
-      setBrief(b); setRecs(r); setWeather(w); setMarket(m)
-    } catch { setToast('Backend is offline or one provider is unavailable. Start the Python API on port 8000.') }
+    const results = await Promise.allSettled([
+      api<any>('/api/farm-brief', { method:'POST', body:JSON.stringify({ profile }) }),
+      api<any>('/api/recommendations', { method:'POST', body:JSON.stringify({ profile }) }),
+      api<any>('/api/weather', { method:'POST', body:JSON.stringify({ city:profile.district, country:'IN' }) }),
+      api<any>('/api/market', { method:'POST', body:JSON.stringify({ commodity:profile.current_crop, state:profile.state, district:profile.district }) })
+    ])
+
+    const [b, r, w, m] = results
+
+    if (b.status === 'fulfilled') setBrief(b.value)
+    if (r.status === 'fulfilled') setRecs(r.value)
+    if (w.status === 'fulfilled') setWeather(w.value)
+    if (m.status === 'fulfilled') setMarket(m.value)
+
+    if (r.status === 'rejected') {
+      setRecs(null)
+      setToast('Personalized crop recommendations are currently unavailable. Please try refreshing.')
+    } else if (results.some(result => result.status === 'rejected')) {
+      setToast('Some farm services are temporarily unavailable, but personalized recommendations are still active.')
+    }
   }
   const ask = async () => {
     if (!chat.trim()) return
@@ -175,7 +186,7 @@ function App() {
         <div className="cards three"><article className="card photo-card"><img src="/assets/field.jpg"/><div><span className="card-label">FIELD</span><h3>{profile.current_crop} · {profile.land_size_acres} acres</h3><p>{briefText}</p></div></article><article className="card"><span className="card-label">WEATHER</span><div className="big-number">{weatherTemp}°</div><h3>{weather?.condition || 'Current conditions'}</h3><p>{weather?.advice || `${weather?.humidity ?? '—'}% humidity · ${weather?.wind_mps ?? '—'} m/s wind`}</p></article><article className="card"><span className="card-label">MARKET</span><div className="big-number">₹{marketPrice}</div><h3>{profile.current_crop} · mandi</h3><p>{marketTrend}</p></article></div>
       </section>}
 
-      {tab==='farm' && <section className="page-section"><div className="section-heading"><div><div className="eyebrow green">FARM CONTEXT</div><h2>My Farm</h2></div><button className="primary small" onClick={loadHome}>Save & refresh</button></div><div className="farm-layout"><div className="farm-photo"><img src="/assets/field.jpg"/><div className="farm-photo-overlay"><b>{profile.district}, {profile.state}</b><span>{profile.soil_type} soil · {profile.land_size_acres} acres</span></div></div><div className="form-card">{[['name','Farmer name'],['state','State'],['district','District'],['soil_type','Soil type'],['current_crop','Current crop'],['season','Season']].map(([k,l])=><label key={k}>{l}<input value={String(profile[k as keyof Profile])} onChange={e=>setField(k as keyof Profile,e.target.value)}/></label>)}<label>Land size (acres)<input type="number" value={profile.land_size_acres} onChange={e=>setField('land_size_acres',Number(e.target.value))}/></label><label className="check"><input type="checkbox" checked={profile.irrigation} onChange={e=>setField('irrigation',e.target.checked)}/> Irrigation available</label></div></div><div className="recommend-row"><div><div className="eyebrow orange">EXPLAINABLE RECOMMENDATION</div><h2>What should I grow?</h2></div><div className="rec-cards">{(recs?.recommendations || [{crop:'Wheat',score:92,reason:'Demo rule based on soil and season'},{crop:'Chickpea',score:87,reason:'Good Rabi option'},{crop:'Mustard',score:78,reason:'Alternative oilseed'}]).map((r:any)=><div className="rec-card" key={r.crop}><b>{r.crop}</b><strong>{r.score}%</strong><p>{r.reason || (r.reasons || []).join(' · ')}</p></div>)}</div></div></section>}
+      {tab==='farm' && <section className="page-section"><div className="section-heading"><div><div className="eyebrow green">FARM CONTEXT</div><h2>My Farm</h2></div><button className="primary small" onClick={loadHome}>Save & refresh</button></div><div className="farm-layout"><div className="farm-photo"><img src="/assets/field.jpg"/><div className="farm-photo-overlay"><b>{profile.district}, {profile.state}</b><span>{profile.soil_type} soil · {profile.land_size_acres} acres</span></div></div><div className="form-card">{[['name','Farmer name'],['state','State'],['district','District'],['soil_type','Soil type'],['current_crop','Current crop'],['season','Season']].map(([k,l])=><label key={k}>{l}<input value={String(profile[k as keyof Profile])} onChange={e=>setField(k as keyof Profile,e.target.value)}/></label>)}<label>Land size (acres)<input type="number" value={profile.land_size_acres} onChange={e=>setField('land_size_acres',Number(e.target.value))}/></label><label className="check"><input type="checkbox" checked={profile.irrigation} onChange={e=>setField('irrigation',e.target.checked)}/> Irrigation available</label></div></div><div className="recommend-row"><div><div className="eyebrow orange">EXPLAINABLE RECOMMENDATION</div><h2>What should I grow?</h2></div><div className="rec-cards">{recs?.recommendations?.length ? recs.recommendations.map((r:any)=><div className="rec-card" key={r.crop}><b>{r.crop}</b><strong>{r.score}%</strong><p>{r.reason || (r.reasons || []).join(' · ')}</p></div>) : <div className="rec-card"><b>Recommendations unavailable</b><p>Could not load personalized crop recommendations. Tap “Save & refresh” to try again.</p></div>}</div></div></section>}
 
       {tab==='health' && <section className="page-section"><div className="section-heading"><div><div className="eyebrow orange">SEE. UNDERSTAND. ACT.</div><h2>Crop Health</h2></div></div><div className="health-grid"><div className="health-photo" onClick={()=>fileRef.current?.click()}><img src={healthImage || '/assets/leaf.jpg'}/><div className="upload-overlay">📷 Tap to upload a leaf image<input ref={fileRef} hidden type="file" accept="image/*" onChange={e=>e.target.files?.[0]&&analyze(e.target.files[0])}/></div></div><div className="analysis-card"><span className="card-label">AI-ASSISTED ANALYSIS</span>{health?.loading?<h3>Analyzing image…</h3>:<><h3>{health?.analysis ? 'Analysis result' : 'Upload a leaf photo'}</h3><p>{health?.analysis || 'The Python backend sends the image to the configured AI provider. Results are guidance only — not a confirmed diagnosis.'}</p>{health?.disclaimer&&<small>{health.disclaimer}</small>}</>}</div></div></section>}
 
