@@ -6,6 +6,70 @@
     <meta name="theme-color" content="#176b45" />
     <meta name="description" content="Krishi Saathi — From Soil to Sale, one intelligent assistant for every farmer." />
     <title>Krishi Saathi — From Soil to Sale</title>
+    <script>
+      (() => {
+        const H = {
+          'FROM SOIL TO SALE':'मिट्टी से मंडी तक',
+          'ONE INTELLIGENT ASSISTANT FOR EVERY FARMER':'हर किसान के लिए एक बुद्धिमान सहायक',
+          'From ':'', 'Soil':'मिट्टी', 'Sale.':'बिक्री तक।', 'One farm. One companion.':'एक खेत। एक साथी।',
+          'AI guidance, farm context, crop health, weather, market intelligence and paid expert-grade reports — connected in one simple workflow.':'एआई मार्गदर्शन, खेत की जानकारी, फसल स्वास्थ्य, मौसम, बाजार की जानकारी और विशेषज्ञ रिपोर्ट — सब एक आसान प्रक्रिया में।',
+          'Open My Farm →':'मेरा खेत खोलें →','Explore x402 Services':'x402 सेवाएँ देखें',
+          'Profile':'प्रोफ़ाइल','Crop':'फसल','Health':'स्वास्थ्य','Market':'बाज़ार',
+          'Your farm companion':'आपका खेत साथी','Practical. Local. Explainable.':'व्यावहारिक। स्थानीय। समझने योग्य।',
+          'LIVE FROM PYTHON BACKEND':'पायथन बैकएंड से लाइव','Today’s Farm Brief':'आज की खेत रिपोर्ट','↻ Refresh':'↻ ताज़ा करें',
+          'FIELD':'खेत','WEATHER':'मौसम','MARKET':'बाज़ार','Current conditions':'वर्तमान स्थिति','mandi':'मंडी',
+          'FARM CONTEXT':'खेत की जानकारी','My Farm':'मेरा खेत','Save & refresh':'सहेजें और ताज़ा करें',
+          'soil':'मिट्टी','acres':'एकड़','Farmer name':'किसान का नाम','State':'राज्य','District':'ज़िला','Soil type':'मिट्टी का प्रकार','Season':'मौसम/ऋतु','Land size (acres)':'भूमि क्षेत्र (एकड़)','Irrigation available':'सिंचाई उपलब्ध है',
+          'EXPLAINABLE RECOMMENDATION':'समझने योग्य सुझाव','What should I grow?':'मैं क्या उगाऊँ?','Recommendations unavailable':'सुझाव उपलब्ध नहीं हैं','Could not load personalized crop recommendations. Tap “Save & refresh” to try again.':'व्यक्तिगत फसल सुझाव लोड नहीं हो सके। फिर से प्रयास करने के लिए “सहेजें और ताज़ा करें” दबाएँ।',
+          'FIELD DIAGNOSTICS':'खेत की जाँच','Crop Health':'फसल स्वास्थ्य','Upload a leaf photo':'पत्ती की फोटो अपलोड करें','AI-assisted symptom review':'एआई सहायता से लक्षणों की जाँच','ANALYSIS':'विश्लेषण','Analyzing image…':'फोटो का विश्लेषण हो रहा है…','Upload a clear crop photo to begin.':'शुरू करने के लिए फसल की साफ फोटो अपलोड करें।',
+          'FROM HARVEST TO SALE':'फसल से बिक्री तक','Market & Sale':'बाज़ार और बिक्री','MARKET SNAPSHOT':'बाज़ार की झलक','COMMODITY':'फसल','LOCATION':'स्थान','NEXT ACTION':'अगला कदम','Compare nearby mandis':'नज़दीकी मंडियों की तुलना करें','Use live market data before deciding where to sell.':'बेचने का निर्णय लेने से पहले लाइव बाजार डेटा देखें।','Python market adapter':'पायथन बाजार डेटा',
+          'PAY PER REPORT · x402':'रिपोर्ट के अनुसार भुगतान · x402','Premium Intelligence':'प्रीमियम जानकारी','Unlock report':'रिपोर्ट खोलें',
+          'KRISHI AI':'कृषि एआई','Ask your farm companion':'अपने खेत साथी से पूछें','Tell me what is happening on your farm. I’ll use your saved profile as context.':'अपने खेत में क्या हो रहा है, बताइए। मैं आपकी सहेजी गई प्रोफ़ाइल को संदर्भ के रूप में इस्तेमाल करूँगा।','e.g. What should I do if my leaves are yellow?':'जैसे: अगर मेरी पत्तियाँ पीली हो रही हैं तो क्या करूँ?','Thinking…':'सोच रहा हूँ…','Ask →':'पूछें →',
+          'Home':'होम','Crop Health':'फसल स्वास्थ्य','Premium':'प्रीमियम',
+          'LIVE x402 · ALGORAND TESTNET':'लाइव x402 · अल्गोरैंड टेस्टनेट','paid only when you unlock this report.':'इस रिपोर्ट को खोलने पर ही भुगतान होगा।','Wallet signs':'वॉलेट हस्ताक्षर','Your private key stays inside the wallet. Krishi Saathi only requests the transaction signature.':'आपकी निजी कुंजी वॉलेट में ही रहती है। कृषि साथी केवल लेन-देन के हस्ताक्षर का अनुरोध करता है।','Connect Pera':'Pera जोड़ें','Connect Defly':'Defly जोड़ें','Connect your wallet first.':'पहले अपना वॉलेट जोड़ें।','Disconnect wallet':'वॉलेट डिस्कनेक्ट करें','Status':'स्थिति','PAYMENT SETTLED':'भुगतान पूरा हुआ','Network:':'नेटवर्क:','Payer:':'भुगतानकर्ता:','Transaction:':'लेन-देन:','View real transaction on LoRA Testnet →':'LoRA टेस्टनेट पर वास्तविक लेन-देन देखें →','Premium report unlocked':'प्रीमियम रिपोर्ट खुल गई',
+          'Payment settled on Algorand Testnet. Report unlocked.':'अल्गोरैंड टेस्टनेट पर भुगतान पूरा हुआ। रिपोर्ट खुल गई।','Report unlocked. Settlement metadata was not returned.':'रिपोर्ट खुल गई। भुगतान का विवरण उपलब्ध नहीं है।','Wallet payment was cancelled or failed.':'वॉलेट भुगतान रद्द हुआ या विफल रहा।','Processing x402 payment…':'x402 भुगतान संसाधित हो रहा है…',
+          'Personalized crop recommendations are currently unavailable. Please try refreshing.':'व्यक्तिगत फसल सुझाव अभी उपलब्ध नहीं हैं। कृपया ताज़ा करके देखें।','Some farm services are temporarily unavailable, but personalized recommendations are still active.':'कुछ खेत सेवाएँ अस्थायी रूप से उपलब्ध नहीं हैं, लेकिन व्यक्तिगत सुझाव सक्रिय हैं।','Could not reach the crop-health service.':'फसल स्वास्थ्य सेवा तक पहुँचा नहीं जा सका।','Start the Python backend and try again.':'पायथन बैकएंड शुरू करके फिर प्रयास करें।','Krishi AI took too long to respond. Please try the question again.':'कृषि एआई ने उत्तर देने में अधिक समय लिया। कृपया प्रश्न फिर से पूछें।','Krishi AI is unavailable right now.':'कृषि एआई अभी उपलब्ध नहीं है।','Please try again.':'कृपया फिर प्रयास करें।','Loading your farm context…':'आपके खेत की जानकारी लोड हो रही है…',
+          'Connect an Algorand Testnet wallet to pay.':'भुगतान के लिए अल्गोरैंड टेस्टनेट वॉलेट जोड़ें।','Requesting 402 payment requirements…':'402 भुगतान विवरण प्राप्त हो रहा है…','Preparing ':'तैयार हो रहा है…',' USDC Testnet payment…':' USDC टेस्टनेट भुगतान…','Pay $':'भुगतान $',' USDC & Unlock':' USDC और खोलें',
+          'Testnet':'टेस्टनेट'
+        };
+
+        const translateText = (value, hindi) => {
+          if (!hindi) return value;
+          let out = value;
+          if (H[out] !== undefined) return H[out];
+          return out;
+        };
+
+        const setLanguage = () => {
+          const button = document.querySelector('.lang');
+          const hindi = button && button.textContent.trim() === 'हिं';
+          document.documentElement.lang = hindi ? 'hi' : 'en';
+          document.title = hindi ? 'कृषि साथी — मिट्टी से मंडी तक' : 'Krishi Saathi — From Soil to Sale';
+
+          document.querySelectorAll('body *:not(script):not(style)').forEach(el => {
+            el.childNodes.forEach(node => {
+              if (node.nodeType !== Node.TEXT_NODE) return;
+              const original = node.__krishiOriginal ?? node.nodeValue;
+              node.__krishiOriginal = original;
+              const translated = translateText(original, hindi);
+              if (node.nodeValue !== translated) node.nodeValue = translated;
+            });
+            ['placeholder','title','aria-label'].forEach(attr => {
+              if (!el.hasAttribute(attr)) return;
+              const original = el.getAttribute('data-krishi-' + attr) ?? el.getAttribute(attr);
+              el.setAttribute('data-krishi-' + attr, original);
+              const translated = translateText(original, hindi);
+              if (el.getAttribute(attr) !== translated) el.setAttribute(attr, translated);
+            });
+          });
+        };
+
+        const observer = new MutationObserver(() => setLanguage());
+        observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+        window.setInterval(setLanguage, 400);
+        window.addEventListener('DOMContentLoaded', setLanguage);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
