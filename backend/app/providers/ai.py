@@ -180,7 +180,36 @@ async def ai_text(prompt: str):
 
 
 async def crop_health(image_bytes: bytes, mime_type: str):
-    prompt = "Analyze this crop/leaf image for visible symptoms. Return: observed signs, possible issues (not a confirmed diagnosis), uncertainty, safe next steps, and when to seek local agricultural expert/lab confirmation."
+    prompt = """Analyze this crop/leaf image for visible symptoms and give farmer-friendly guidance.
+
+The result will be shown directly to an Indian farmer. Use very simple everyday language. Avoid long scientific explanations and avoid Latin disease names unless they are useful, in which case put them in brackets after the common name.
+
+Return ONLY this short plain-text format. Do not use Markdown symbols such as ###, **, or ```:
+
+🌿 CROP HEALTH RESULT
+
+⚠️ POSSIBLE PROBLEM
+One short sentence describing the most likely issue. Say 'may be' or 'possible' because an image is not a confirmed diagnosis.
+
+👀 WHAT I SEE
+• Symptom 1 in simple words
+• Symptom 2 in simple words
+• Symptom 3 in simple words
+
+✅ WHAT TO DO NOW
+1. Simple practical action
+2. Simple practical action
+3. Simple practical action
+
+🔎 CONFIDENCE
+Low / Medium / High — followed by one short reason.
+
+👨‍🌾 WHEN TO GET HELP
+One short sentence telling the farmer when to contact a local agriculture expert or lab.
+
+⚠️ This is AI-based guidance, not a confirmed diagnosis.
+
+Keep the entire response under 180 words. Never prescribe a pesticide dose or claim that a chemical treatment is definitely required."""
     try:
         result = await gemini_image(prompt, image_bytes, mime_type)
         return result or "AI image analysis returned no result. Please try a clearer image."
