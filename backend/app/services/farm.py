@@ -1,3 +1,4 @@
+import asyncio
 from app.providers.ai import ai_text
 
 # Lightweight, explainable crop suitability engine using the farmer profile.
@@ -89,6 +90,35 @@ def recommendations(profile: dict):
 
 
 async def farm_brief(profile: dict, weather: dict | None = None, market: dict | None = None):
+    """Return a fast farm brief with a strict AI timeout and deterministic fallback.
+
+    The home page calls this endpoint during startup, so a provider retry/outage must
+    never hold the page open for 10+ seconds.
+    """
     context = {"profile": profile, "weather": weather, "market": market}
     prompt = "Create a short Today's Farm Brief with 3-5 prioritized actions for the farmer using this context. Do not invent data. Label demo sources.\n" + str(context)
-    return {"source": "AI", "brief": await ai_text(prompt)}
+
+    try:
+        # Keep startup latency bounded even when the AI provider is overloaded.
+        return {"source": "AI", "brief": await asyncio.wait_for(ai_text(prompt), timeout=3.0)}
+    except (asyncio.TimeoutError, Exception):
+        actions = []
+        condition = (weather or {}).get("condition")
+        advice = (weather or {}).get("advice")
+        price = (market or {}).get("modal_price")
+
+        if condition:
+            actions.append(f"Weather: {condition}.")
+        if advice:
+            actions.append(f"Weather action: {advice}")
+        if price is not None:
+            actions.append(f"Market: current configured modal price is ₹{price}.")
+        actions.append(f"Crop: monitor {profile.get('current_crop') or 'your crop'} and check the field before irrigation or spraying.")
+        actions.append("Verify local field conditions before taking any major farm action.")
+
+        return {
+            "source": "fast-fallback",
+            "brief": " ".join(actions[:5]),
+            "ai_fallback": True,
+            "disclaimer": "AI brief timed out or was unavailable; this is a deterministic farm-context fallback.",
+        }
