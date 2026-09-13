@@ -9,12 +9,12 @@ logger = logging.getLogger(__name__)
 
 SYSTEM = """You are Krishi Saathi, an agricultural assistant for Indian farmers. Be practical, concise, multilingual when requested, and explain uncertainty. Never claim a crop disease is confirmed from an image. Do not provide unsafe chemical instructions; encourage label-compliant and local expert guidance. Use provided farmer/weather/market context and clearly distinguish demo data from live data."""
 
-# Prefer the stable vision-capable model first. Keep the configured model as a
-# fallback so an existing Render GEMINI_MODEL setting still works.
 GEMINI_IMAGE_MODELS = ["gemini-2.5-flash", "gemini-3.8-flash"]
 GEMINI_TEXT_FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-3.8-flash"]
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 MAX_IMAGE_DIMENSION = 1600
+GEMINI_IMAGE_TIMEOUT = 30
+GEMINI_RETRIES = 2
 
 
 def _gemini_generate(client, model: str, contents):
@@ -39,6 +39,50 @@ def _normalize_image(image_bytes: bytes):
         raise ValueError("Uploaded file is not a supported image") from exc
 
 
+def _error_details(exc: Exception) -> str:
+    """Extract useful provider diagnostics without ever logging the API key."""
+    code = getattr(exc, "code", None) or getattr(exc, "status_code", None)
+    status = getattr(exc, "status", None)
+    message = str(exc).strip().replace("\n", " ")
+    if len(message) > 300:
+        message = message[:300] + "..."
+    return f"code={code or status or 'unknown'} error={type(exc).__name__}: {message}"
+
+
+def _is_retryable_gemini_error(exc: Exception) -> bool:
+    if isinstance(exc, (asyncio.TimeoutError, TimeoutError, httpx.TimeoutException)):
+        return True
+    code = getattr(exc, "code", None) or getattr(exc, "status_code", None) or getattr(exc, "status", None)
+    if code in (408, 409, 429, 500, 502, 503, 504):
+        return True
+    text = str(exc).lower()
+    return any(token in text for token in ("429", "500", "502", "503", "504", "rate limit", "temporarily unavailable", "overloaded", "high demand"))
+
+
+async def _generate_with_retry(client, model: str, contents, timeout: int):
+    last_error = None
+    for attempt in range(1, GEMINI_RETRIES + 1):
+        try:
+            return await asyncio.wait_for(
+                asyncio.to_thread(_gemini_generate, client, model, contents),
+                timeout=timeout,
+            )
+        except Exception as exc:
+            last_error = exc
+            logger.warning(
+                "Gemini request failed model=%s attempt=%s/%s retryable=%s %s",
+                model,
+                attempt,
+                GEMINI_RETRIES,
+                _is_retryable_gemini_error(exc),
+                _error_details(exc),
+            )
+            if attempt >= GEMINI_RETRIES or not _is_retryable_gemini_error(exc):
+                raise
+            await asyncio.sleep(attempt * 1.5)
+    raise last_error or RuntimeError("Gemini request failed")
+
+
 async def gemini_text(prompt: str):
     if not settings.gemini_api_key:
         return None
@@ -48,10 +92,7 @@ async def gemini_text(prompt: str):
     last_error = None
     for model in models:
         try:
-            response = await asyncio.wait_for(
-                asyncio.to_thread(_gemini_generate, client, model, f"{SYSTEM}\n\n{prompt}"),
-                timeout=45,
-            )
+            response = await _generate_with_retry(client, model, f"{SYSTEM}\n\n{prompt}", timeout=45)
             text = getattr(response, "text", None)
             if text:
                 return text.strip()
@@ -67,8 +108,6 @@ async def gemini_image(prompt: str, image_bytes: bytes, mime_type: str):
     if not settings.gemini_api_key:
         raise RuntimeError("Gemini API key is not configured")
 
-    # Browser uploads can be HEIC/WebP/large PNGs. Normalize them so the API
-    # always receives a valid, compact JPEG regardless of the original format.
     image_bytes, mime_type = _normalize_image(image_bytes)
 
     from google import genai
@@ -89,17 +128,14 @@ async def gemini_image(prompt: str, image_bytes: bytes, mime_type: str):
     for model in models:
         try:
             logger.info("Running Gemini crop image analysis with model=%s", model)
-            response = await asyncio.wait_for(
-                asyncio.to_thread(_gemini_generate, client, model, contents),
-                timeout=60,
-            )
+            response = await _generate_with_retry(client, model, contents, timeout=GEMINI_IMAGE_TIMEOUT)
             text = getattr(response, "text", None)
             if text:
                 return text.strip()
             logger.warning("Gemini returned no text for image analysis with model=%s", model)
         except Exception as exc:
             last_error = exc
-            logger.exception("Gemini image analysis failed with model=%s", model)
+            logger.exception("Gemini image analysis failed with model=%s: %s", model, _error_details(exc))
 
     if last_error:
         raise last_error
