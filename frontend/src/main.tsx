@@ -123,6 +123,7 @@ function App() {
   const [market, setMarket] = useState<any>(null)
   const [chat, setChat] = useState('')
   const [messages, setMessages] = useState<{role:string;text:string}[]>([])
+  const [chatBusy, setChatBusy] = useState(false)
   const [health, setHealth] = useState<any>(null)
   const [healthImage, setHealthImage] = useState<string>('')
   const [selectedService, setSelectedService] = useState<Service | null>(null)
@@ -153,12 +154,38 @@ function App() {
       setToast('Some farm services are temporarily unavailable, but personalized recommendations are still active.')
     }
   }
+
   const ask = async () => {
-    if (!chat.trim()) return
-    const q = chat.trim(); setChat(''); setMessages(m => [...m, {role:'user',text:q}])
-    try { const out = await api<any>('/api/chat', {method:'POST',body:JSON.stringify({profile,message:q})}); setMessages(m => [...m,{role:'assistant',text:out.answer}]) }
-    catch { setMessages(m => [...m,{role:'assistant',text:'I could not reach the Python AI service. Check that the backend is running.'}]) }
+    const q = chat.trim()
+    if (!q || chatBusy) return
+    setChat('')
+    setChatBusy(true)
+    setMessages(m => [...m, {role:'user',text:q}])
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => controller.abort(), 55000)
+    try {
+      const r = await fetch(`${API}/api/chat`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({profile,message:q}),
+        signal: controller.signal,
+      })
+      if (!r.ok) throw new Error(`AI service returned ${r.status}`)
+      const out = await r.json()
+      const answer = String(out?.answer || '').trim()
+      if (!answer) throw new Error('AI service returned an empty answer')
+      setMessages(m => [...m,{role:'assistant',text:answer}])
+    } catch (e: any) {
+      const text = e?.name === 'AbortError'
+        ? 'Krishi AI took too long to respond. Please try the question again.'
+        : `Krishi AI is unavailable right now. ${e?.message || 'Please try again.'}`
+      setMessages(m => [...m,{role:'assistant',text}])
+    } finally {
+      window.clearTimeout(timeout)
+      setChatBusy(false)
+    }
   }
+
   const analyze = async (file: File) => {
     setHealthImage(URL.createObjectURL(file)); setHealth({loading:true})
     const fd = new FormData(); fd.append('file', file)
@@ -170,7 +197,6 @@ function App() {
   const marketTrend = market?.trend ?? (market?.records?.length ? 'Market record available from the configured Python adapter.' : 'Market trend from the Python data adapter.')
   const weatherTemp = weather?.temperature_c ?? weather?.temperature ?? '—'
   const briefText = brief?.summary ?? brief?.brief ?? 'Loading your farm context…'
-  const title = tab === 'home' ? 'Today’s Farm Brief' : tab === 'farm' ? 'My Farm' : tab === 'health' ? 'Crop Health' : tab === 'market' ? 'Market & Sale' : 'Premium Intelligence'
 
   return <div className="app-shell">
     <header className="topbar"><div className="brand"><div className="logo">कृ</div><div><strong>Krishi Saathi</strong><span>FROM SOIL TO SALE</span></div></div><div className="top-actions"><span className="testnet-pill">● TESTNET</span><button className="lang" onClick={()=>setField('language',profile.language==='hi-IN'?'en-IN':'hi-IN')}>{profile.language==='hi-IN'?'हिं':'EN'}</button></div></header>
@@ -194,7 +220,7 @@ function App() {
 
       {tab==='premium' && <section className="page-section"><div className="section-heading"><div><div className="eyebrow green">PAY PER REPORT · x402</div><h2>Premium Intelligence</h2></div></div><div className="service-grid">{services.map(s=><article className="service-card" key={s.key}><div className="service-icon">{s.icon}</div><h3>{s.title}</h3><p>{s.desc}</p><div className="service-bottom"><b>${s.price.toFixed(2)} USDC</b><button className="primary small" onClick={()=>setSelectedService(s)}>Unlock report</button></div></article>)}</div></section>}
 
-      <section className="chat-section"><div className="section-heading"><div><div className="eyebrow green">KRISHI AI</div><h2>Ask your farm companion</h2></div></div><div className="chat-box"><div className="messages">{messages.length===0 && <div className="assistant-msg">Tell me what is happening on your farm. I’ll use your saved profile as context.</div>}{messages.map((m,i)=><div key={i} className={m.role==='user'?'user-msg':'assistant-msg'}>{m.text}</div>)}</div><div className="chat-input"><input value={chat} onChange={e=>setChat(e.target.value)} onKeyDown={e=>e.key==='Enter'&&ask()} placeholder="e.g. What should I do if my leaves are yellow?"/><button className="primary" onClick={ask}>Ask →</button></div></div></section>
+      <section className="chat-section"><div className="section-heading"><div><div className="eyebrow green">KRISHI AI</div><h2>Ask your farm companion</h2></div></div><div className="chat-box"><div className="messages">{messages.length===0 && <div className="assistant-msg">Tell me what is happening on your farm. I’ll use your saved profile as context.</div>}{messages.map((m,i)=><div key={i} className={m.role==='user'?'user-msg':'assistant-msg'}>{m.text}</div>)}{chatBusy && <div className="assistant-msg">Krishi AI is thinking…</div>}</div><div className="chat-input"><input disabled={chatBusy} value={chat} onChange={e=>setChat(e.target.value)} onKeyDown={e=>e.key==='Enter'&&ask()} placeholder="e.g. What should I do if my leaves are yellow?"/><button className="primary" disabled={chatBusy || !chat.trim()} onClick={ask}>{chatBusy ? 'Thinking…' : 'Ask →'}</button></div></div></section>
     </main>
 
     <nav className="bottom-nav">{[['home','⌂','Home'],['farm','◫','My Farm'],['health','⌁','Crop Health'],['market','₹','Market'],['premium','✦','Premium']].map(([k,i,l])=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}><span>{i}</span>{l}</button>)}</nav>
