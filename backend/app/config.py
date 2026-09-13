@@ -10,7 +10,7 @@ class Settings:
     upload_dir = os.getenv("UPLOAD_DIR", "./uploads")
 
     gemini_api_key = os.getenv("GEMINI_API_KEY", "")
-    gemini_model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+    gemini_model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     anthropic_api_key = os.getenv("ANTHROPIC_API_KEY", "")
     claude_model = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5")
     ollama_enabled = os.getenv("OLLAMA_ENABLED", "false").lower() == "true"
@@ -31,8 +31,8 @@ class Settings:
     data_gov_resource_url = os.getenv("DATA_GOV_RESOURCE_URL", "")
 
     agmarknet_base_url = os.getenv("AGMARKNET_BASE_URL", "")
-    agmarknet_api_key = os.getenv("AGMARKNET_API_KEY", "")
-    agmarknet_daily_path = os.getenv("AGMARKNET_DAILY_PATH", "/api/daily")
+    agmarknet_api_key = os.getenv("AGMARKET_API_KEY", "")
+    agmarknet_daily_path = os.getenv("AGMARKET_DAILY_PATH", "/api/daily")
 
     avm_address = os.getenv("AVM_ADDRESS", "")
     facilitator_url = os.getenv("FACILITATOR_URL", "https://facilitator.goplausible.xyz")
