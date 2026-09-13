@@ -10,7 +10,7 @@ class Settings:
     upload_dir = os.getenv("UPLOAD_DIR", "./uploads")
 
     gemini_api_key = os.getenv("GEMINI_API_KEY", "")
-    gemini_model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+    gemini_model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     anthropic_api_key = os.getenv("ANTHROPIC_API_KEY", "")
     claude_model = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5")
     ollama_enabled = os.getenv("OLLAMA_ENABLED", "false").lower() == "true"
