@@ -30,10 +30,10 @@
           return H[value] !== undefined ? H[value] : value;
         };
         let translating = false;
+        let scheduled = false;
         const setLanguage = () => {
           if (translating) return;
           translating = true;
-          observer.disconnect();
           try {
             const button = document.querySelector('.lang');
             const hindi = button && button.textContent.trim() === 'हिं';
@@ -55,12 +55,22 @@
             });
           } finally {
             translating = false;
-            observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
           }
         };
-        const observer = new MutationObserver(() => setLanguage());
-        observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+        const scheduleLanguageUpdate = () => {
+          if (scheduled) return;
+          scheduled = true;
+          window.setTimeout(() => {
+            scheduled = false;
+            setLanguage();
+          }, 100);
+        };
+        const observer = new MutationObserver(scheduleLanguageUpdate);
+        observer.observe(document.documentElement, { childList: true, subtree: true });
         window.addEventListener('DOMContentLoaded', setLanguage);
+        document.addEventListener('click', event => {
+          if (event.target.closest('.lang')) scheduleLanguageUpdate();
+        });
       })();
     </script>
   </head>
