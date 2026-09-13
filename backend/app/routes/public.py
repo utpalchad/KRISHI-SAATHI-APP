@@ -22,8 +22,14 @@ async def database_status():
 async def chat(req: ChatRequest):
     prompt = f"Farmer profile: {req.profile.model_dump()}\nFarmer question: {req.message}\nAnswer in the farmer's language ({req.profile.language}) unless asked otherwise."
     answer = await ai_text(prompt)
-    save_chat(req.profile.name, req.profile.language, req.message, answer)
-    save_farm_profile(req.profile.model_dump())
+
+    # Database persistence must never make the AI endpoint fail.
+    try:
+        save_chat(req.profile.name, req.profile.language, req.message, answer)
+        save_farm_profile(req.profile.model_dump())
+    except Exception as exc:
+        print(f"[database] chat persistence failed: {exc}")
+
     return {"answer": answer}
 
 @router.post("/recommendations")
@@ -34,7 +40,10 @@ async def crop_recommendations(req: RecommendationRequest):
 async def brief(req: FarmBriefRequest):
     weather = await current_weather(req.profile.district)
     market = await market_data(req.profile.current_crop or "Wheat", req.profile.state, req.profile.district)
-    save_farm_profile(req.profile.model_dump())
+    try:
+        save_farm_profile(req.profile.model_dump())
+    except Exception as exc:
+        print(f"[database] farm profile persistence failed: {exc}")
     return await farm_brief(req.profile.model_dump(), weather, market)
 
 @router.post("/weather")
@@ -67,5 +76,8 @@ async def health_analysis(file: UploadFile = File(...)):
     data = await file.read()
     mime_type = file.content_type or "image/jpeg"
     analysis = await crop_health(data, mime_type)
-    save_crop_health(file.filename or "upload", mime_type, analysis)
+    try:
+        save_crop_health(file.filename or "upload", mime_type, analysis)
+    except Exception as exc:
+        print(f"[database] crop health persistence failed: {exc}")
     return {"analysis": analysis, "disclaimer": "Prototype AI-assisted analysis; not a confirmed diagnosis."}
