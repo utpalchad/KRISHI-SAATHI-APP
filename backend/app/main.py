@@ -1,11 +1,24 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.routes.public import router as public_router
 from app.routes.premium import router as premium_router
 from app.services.x402 import build_x402_middleware
+from app.db import init_db, db_status
 
-app = FastAPI(title=settings.app_name, version="2.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        init_db()
+    except Exception as exc:
+        print(f"[database] initialization failed: {exc}")
+    yield
+
+
+app = FastAPI(title=settings.app_name, version="2.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -44,4 +57,5 @@ async def status():
         "market": bool(settings.agmarknet_base_url),
         "bhashini": bool(settings.bhashini_api_url),
         "x402": X402Middleware is not None,
+        "database": db_status(),
     }
