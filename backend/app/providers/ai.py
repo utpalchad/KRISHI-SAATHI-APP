@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 SYSTEM = """You are Krishi Saathi, an agricultural assistant for Indian farmers. Be practical, concise, multilingual when requested, and explain uncertainty. Never claim a crop disease is confirmed from an image. Do not provide unsafe chemical instructions; encourage label-compliant and local expert guidance. Use provided farmer/weather/market context and clearly distinguish demo data from live data."""
 
-GEMINI_IMAGE_MODELS = ["gemini-2.5-flash", "gemini-3.8-flash"]
-GEMINI_TEXT_FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-3.8-flash"]
+GEMINI_IMAGE_MODELS = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.8-flash"]
+GEMINI_TEXT_FALLBACK_MODELS = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.8-flash"]
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 MAX_IMAGE_DIMENSION = 1600
 GEMINI_IMAGE_TIMEOUT = 30
@@ -120,7 +120,7 @@ async def gemini_image(prompt: str, image_bytes: bytes, mime_type: str):
 
     configured = settings.gemini_model.strip() if settings.gemini_model else ""
     models = []
-    for model in ["gemini-2.5-flash", configured, "gemini-3.8-flash"]:
+    for model in [configured, "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.8-flash"]:
         if model and model not in models:
             models.append(model)
 
