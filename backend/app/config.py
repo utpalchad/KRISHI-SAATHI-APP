@@ -17,12 +17,11 @@ class Settings:
     ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     ollama_model = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
 
-    bhashini_api_url = os.getenv("BHASHINI_API_URL", "")
-    bhashini_api_key = os.getenv("BHASHINI_API_KEY", "")
-    bhashini_user_id = os.getenv("BHASHINI_USER_ID", "")
-    bhashini_asr_pipeline_id = os.getenv("BHASHINI_ASR_PIPELINE_ID", "")
-    bhashini_tts_pipeline_id = os.getenv("BHASHINI_TTS_PIPELINE_ID", "")
-    bhashini_translate_pipeline_id = os.getenv("BHASHINI_TRANSLATE_PIPELINE_ID", "")
+    sarvam_api_key = os.getenv("SARVAM_API_KEY", "")
+    sarvam_base_url = os.getenv("SARVAM_BASE_URL", "https://api.sarvam.ai")
+    sarvam_translate_model = os.getenv("SARVAM_TRANSLATE_MODEL", "sarvam-translate:v1")
+    sarvam_stt_model = os.getenv("SARVAM_STT_MODEL", "saaras:v4")
+    sarvam_tts_model = os.getenv("SARVAM_TTS_MODEL", "bulbul:v3")
 
     openweather_api_key = os.getenv("OPENWEATHER_API_KEY", "")
     openweather_base_url = os.getenv("OPENWEATHER_BASE_URL", "https://api.openweathermap.org/data/2.5")
