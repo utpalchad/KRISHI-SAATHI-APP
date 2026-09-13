@@ -133,26 +133,28 @@ function App() {
   useEffect(() => { localStorage.setItem('krishi-profile', JSON.stringify(profile)) }, [profile])
   useEffect(() => { loadHome() }, [])
   const loadHome = async () => {
-    const results = await Promise.allSettled([
-      api<any>('/api/farm-brief', { method:'POST', body:JSON.stringify({ profile }) }),
-      api<any>('/api/recommendations', { method:'POST', body:JSON.stringify({ profile }) }),
-      api<any>('/api/weather', { method:'POST', body:JSON.stringify({ city:profile.district, country:'IN' }) }),
-      api<any>('/api/market', { method:'POST', body:JSON.stringify({ commodity:profile.current_crop, state:profile.state, district:profile.district }) })
+    let failed = false
+
+    const run = async <T,>(request: Promise<T>, onSuccess: (value: T) => void) => {
+      try {
+        const value = await Promise.race([
+          request,
+          new Promise<T>((_, reject) => window.setTimeout(() => reject(new Error('Request timed out')), 7000))
+        ])
+        onSuccess(value)
+      } catch {
+        failed = true
+      }
+    }
+
+    await Promise.all([
+      run(api<any>('/api/farm-brief', { method:'POST', body:JSON.stringify({ profile }) }), setBrief),
+      run(api<any>('/api/recommendations', { method:'POST', body:JSON.stringify({ profile }) }), setRecs),
+      run(api<any>('/api/weather', { method:'POST', body:JSON.stringify({ city:profile.district, country:'IN' }) }), setWeather),
+      run(api<any>('/api/market', { method:'POST', body:JSON.stringify({ commodity:profile.current_crop, state:profile.state, district:profile.district }) }), setMarket)
     ])
 
-    const [b, r, w, m] = results
-
-    if (b.status === 'fulfilled') setBrief(b.value)
-    if (r.status === 'fulfilled') setRecs(r.value)
-    if (w.status === 'fulfilled') setWeather(w.value)
-    if (m.status === 'fulfilled') setMarket(m.value)
-
-    if (r.status === 'rejected') {
-      setRecs(null)
-      setToast('Personalized crop recommendations are currently unavailable. Please try refreshing.')
-    } else if (results.some(result => result.status === 'rejected')) {
-      setToast('Some farm services are temporarily unavailable, but personalized recommendations are still active.')
-    }
+    if (failed) setToast('Some farm services are temporarily unavailable. The dashboard is still usable.')
   }
 
   const ask = async () => {
