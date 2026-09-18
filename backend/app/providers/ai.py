@@ -179,8 +179,28 @@ async def ai_text(prompt: str):
     return f"I can't generate a live AI answer right now. Provider status: {detail}. Please check the AI provider configuration on the backend."
 
 
-async def crop_health(image_bytes: bytes, mime_type: str):
-    prompt = """Analyze this crop/leaf image for visible symptoms and give farmer-friendly guidance.
+async def crop_health(image_bytes: bytes, mime_type: str, language: str = "en-IN", crop: str = ""):
+    language_names = {
+        "en-IN": "English", "hi-IN": "Hindi", "pa-IN": "Punjabi", "mr-IN": "Marathi",
+        "bn-IN": "Bengali", "ta-IN": "Tamil", "te-IN": "Telugu", "gu-IN": "Gujarati",
+        "kn-IN": "Kannada", "ml-IN": "Malayalam"
+    }
+    output_language = language_names.get(language, language or "English")
+    crop_context = crop.strip() if crop else "unknown crop"
+    prompt = f"""Analyze this crop/leaf image for visible symptoms and give farmer-friendly guidance.
+
+OUTPUT LANGUAGE: {output_language} ({language})
+KNOWN CROP FROM FARM PROFILE: {crop_context}
+
+Write the ENTIRE farmer-facing response in {output_language}. Translate every heading, explanation, confidence label, and safety note. A common/scientific disease name may remain in English in brackets when useful. Do not mix English into the rest of the answer.
+
+Do not invent certainty. Base confidence only on visible evidence in this image:
+- HIGH: image is clear and visible symptoms strongly match a distinctive pattern.
+- MEDIUM: symptoms are visible but multiple causes could plausibly look similar.
+- LOW: image is unclear, incomplete, or symptoms are non-specific.
+If confidence is LOW, do not choose one disease as if it were likely. State that the image is insufficient and ask for a clearer close-up plus a whole-plant photo.
+
+Analyze this crop/leaf image for visible symptoms and give farmer-friendly guidance.
 
 The result will be shown directly to an Indian farmer. Use very simple everyday language. Avoid long scientific explanations and avoid Latin disease names unless they are useful, in which case put them in brackets after the common name.
 
