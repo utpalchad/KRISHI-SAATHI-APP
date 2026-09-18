@@ -72,12 +72,12 @@ async def stt(language: str = "hi", file: UploadFile = File(...)):
     return await speech_to_text(data, language, file.content_type or "audio/wav")
 
 @router.post("/crop-health")
-async def health_analysis(file: UploadFile = File(...)):
+async def health_analysis(file: UploadFile = File(...), language: str = "en-IN", crop: str = ""):
     data = await file.read()
     mime_type = file.content_type or "image/jpeg"
-    analysis = await crop_health(data, mime_type)
+    analysis = await crop_health(data, mime_type, language=language, crop=crop)
     try:
         save_crop_health(file.filename or "upload", mime_type, analysis)
     except Exception as exc:
         print(f"[database] crop health persistence failed: {exc}")
-    return {"analysis": analysis, "disclaimer": "Prototype AI-assisted analysis; not a confirmed diagnosis."}
+    return {"analysis": analysis}
